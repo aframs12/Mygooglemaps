@@ -1,23 +1,16 @@
 package ac.id.atmaluhur.mhs.mygooglemaps;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
-
 import android.Manifest;
-import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -28,16 +21,16 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.w3c.dom.Text;
-
-import java.io.IOException;
-import java.util.List;
+//import android.content.Context;
+//import android.location.Address;
+//import android.location.Geocoder;
+//import android.view.View;
+//import android.widget.EditText;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback ,
     GoogleApiClient.ConnectionCallbacks,
@@ -61,7 +54,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         //tambahan tutorial keempat
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            checkLocationPermisssion();
+            checkLocationPermission();
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -99,7 +92,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onLocationChanged( Location location) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // if request is cancelled, the result arrarys are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    //permission was granted. do the
+                    // Contacts-related task you need to do.
+                    if (ContextCompat.checkSelfPermission( this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        if (mGoogleApiClient == null) {
+                            buildGoogleApiClient();
+                        }
+                        mMap.setMyLocationEnabled(true);
+                    }
+                } else {
+
+                    // Permission denied, Disable the functionality that depends on this permission.
+                    Toast.makeText(this,  "permission denied", Toast.LENGTH_SHORT ).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other permissions this app might request.
+            // You can add here other case statements according to your requirement.
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
         Log.d("onLocationChanged", "entered");
 
         mLastLocation = location;
@@ -130,11 +156,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
+    public void onConnected(Bundle bundle) {
     //tambahan tutorial 3
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         if (ContextCompat.checkSelfPermission( this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED){
@@ -148,10 +175,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
-    public void onClick(View v)
+    /*public void onClick(View v)
     {
         if (v.getId()==R.id.B_search) {
             EditText tf_location = (EditText) findViewById(R.id.TF_Location);
@@ -178,7 +205,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
             }
         }
-    }
+    }*/
     //tutorial kedua
     protected synchronized void buildGoogleApiClient()
     {
@@ -219,38 +246,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_LOCATION: {
-                // if request is cancelled, the result arrarys are empty.
-                if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    //permission was granted. do the
-                    // Contacts-related task you need to do.
-                    if
-                        (ContextCompat.checkSelfPermission( this,
-                                Manifest.permission.ACCESS_FINE_LOCATION)
-                                == PackageManager.PERMISSION_GRANTED) {
-
-                            if (mGoogleApiClient == null) {
-                                buildGoogleApiClient();
-                            }
-                            mMap.setMyLocationEnabled(true);
-                        }
-                    } else {
-
-                        // Permission denied, Disable the functionality that depends on this permission.
-                        Toast.makeText(this,  "permission denied", Toast.LENGTH_SHORT ).show();
-                    }
-                    return;
-                }
-
-                // other 'case' lines to check for other permissions this app might request.
-                // You can add here other case statements according to your requirement.
-            }
-        }
     }
 
